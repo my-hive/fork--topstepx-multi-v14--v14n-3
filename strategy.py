@@ -1,8 +1,8 @@
 """v14n-3: afternoon Nasdaq risk premium."""
 import numpy as np
 
-PARAMS = {'reference': 30600, 'entry': 43200, 'flat': 54000,
-          'stop_points': 150., 'contracts': 1}
+PARAMS = {'entry': 43200, 'flat': 54000,
+          'stop_points': 50., 'contracts': 3}
 
 
 def entry_risk(panel):
@@ -19,11 +19,9 @@ def signals(panel):
             continue
         c, o, sec = (df[k].to_numpy() for k in ('close', 'open', 'ct_sec'))
         for ix in df.groupby('session', sort=False).indices.values():
-            reference, side, used, stop = np.nan, 0, False, 0.
+            side, used, stop = 0, False, 0.
             for i in ix:
                 t = sec[i]
-                if t == PARAMS['reference']:
-                    reference = o[i]
                 if side and (t >= PARAMS['flat'] or c[i] <= stop):
                     side = 0
                 if not used and t == PARAMS['entry'] :
