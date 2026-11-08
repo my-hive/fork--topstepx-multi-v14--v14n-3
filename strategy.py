@@ -1,12 +1,11 @@
-"""v14n-3: afternoon Nasdaq risk premium."""
+"""v14n-3: crude producer hedging into settlement, fixed causal close stop."""
 import numpy as np
 
-PARAMS = {'reference': 30600, 'entry': 43200, 'flat': 54000,
-          'stop_points': 50., 'contracts': 3}
+PARAMS = {'entry': 43200, 'flat': 48000, 'stop_points': .30, 'contracts': 1}
 
 
 def entry_risk(panel):
-    return {s: np.full(len(d), PARAMS['stop_points'] * 2 if s == 'MNQ' else 0.)
+    return {s: np.full(len(d), PARAMS['stop_points'] * 1000 if s == 'CL' else 0.)
             for s, d in panel.items()}
 
 
@@ -15,22 +14,17 @@ def signals(panel):
     for symbol, df in panel.items():
         out = np.zeros(len(df), dtype=np.int64)
         result[symbol] = out
-        if symbol != 'MNQ':
+        if symbol != 'CL':
             continue
-        c, o, sec = (df[k].to_numpy() for k in ('close', 'open', 'ct_sec'))
+        c, sec = (df[k].to_numpy() for k in ('close', 'ct_sec'))
         for ix in df.groupby('session', sort=False).indices.values():
-            reference, side, used, stop = np.nan, 0, False, 0.
+            side, used, stop = 0, False, 0.
             for i in ix:
-                t = sec[i]
-                if t == PARAMS['reference']:
-                    reference = o[i]
-                if side and (t >= PARAMS['flat'] or c[i] <= stop):
+                if side and (sec[i] >= PARAMS['flat'] or c[i] >= stop):
                     side = 0
-                if not used and t == PARAMS['entry'] and c[i] > reference:
-                    side = 1
-                    stop = c[i] - PARAMS['stop_points']
+                if not used and sec[i] == PARAMS['entry']:
+                    side = -1
+                    stop = c[i] + PARAMS['stop_points']
                     used = True
                 out[i] = side * PARAMS['contracts']
     return result
-
-
