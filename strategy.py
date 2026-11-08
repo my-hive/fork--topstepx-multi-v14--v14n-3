@@ -26,7 +26,7 @@ def signals(panel):
                     reference = o[i]
                 if side and (t >= PARAMS['flat'] or c[i] <= stop):
                     side = 0
-                if not used and t == PARAMS['entry'] and c[i] > reference:
+                if not used and t == PARAMS['entry'] and c[i] < reference:
                     side = 1
                     stop = c[i] - PARAMS['stop_points']
                     used = True
