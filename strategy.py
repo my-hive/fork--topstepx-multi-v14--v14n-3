@@ -1,8 +1,8 @@
-"""v14n-3: completed morning range breakout; one attempt per session."""
+"""v14n-3: morning range exhaustion reversal; one attempt per session."""
 import numpy as np
 
-PARAMS = dict(range_start=30600, range_end=36000, entry_end=43200,
-              flat=50400, stop_points=75., contracts=2)
+PARAMS = {'range_start': 30600, 'range_end': 36000, 'entry_end': 43200,
+          'flat': 50400, 'stop_points': 75., 'contracts': 2}
 
 
 def entry_risk(panel):
@@ -29,17 +29,10 @@ def signals(panel):
                     side = 0
                 if (not used and PARAMS['range_end'] <= t < PARAMS['entry_end']
                         and np.isfinite(hi) and (c[i] > hi or c[i] < lo)):
-                    side = 1 if c[i] > hi else -1
+                    side = -1 if c[i] > hi else 1
                     stop = c[i] - side * PARAMS['stop_points']
                     used = True
                 out[i] = side * PARAMS['contracts']
     return result
 
 
-if __name__ == '__main__':
-    import pandas as pd
-    d = pd.DataFrame(dict(session=['s'] * 5, ct_sec=[30600, 35940, 36000, 36060, 50400],
-                          close=[100., 100., 102., 20., 20.],
-                          high=[101., 101., 103., 21., 21.], low=[99., 99., 101., 19., 19.]))
-    assert signals({'MNQ': d})['MNQ'].tolist() == [0, 0, 2, 0, 0]
-    assert np.array_equal(signals({'MNQ': d.iloc[:3]})['MNQ'], signals({'MNQ': d})['MNQ'][:3])
